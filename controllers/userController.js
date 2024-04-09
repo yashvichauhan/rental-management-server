@@ -1,29 +1,23 @@
-require('dotenv').config()
+const bcrypt = require('bcrypt');
 const User = require('../models/User');
-const { createToken } = require('../utils/utils');
 
-exports.loginUser = async (req, res) => {
+exports.registerNewUser = async (req, res) => {
     try {
-        const {email, password} = req.body
-        const user = await User.login(email, password);
-        const token = createToken(user._id)
-        res.cookie('jwt', token, {httpOnly: true, maxAge: 3*24*60*60*1000})
-        res.status(201).json({user: user._id})
-    } catch (error) {
-        res.status(404).json({ message: error.message });
-    }
-};
+        const existingUser = await User.findOne({ email: req.body.email });
+        if (existingUser) {
+            return res.status(409).json({ message: 'Email already in use' });
+        }
 
-exports.signUpUser = async (req, res) => {
-    try{
-        const {email, password,roleId} = req.body
-        const user = await User.create({email, password, roleId})
-        const token = createToken(user._id)
-        res.cookie('jwt', token, {httpOnly: true, maxAge: 3*24*60*60*1000})
-        res.status(201).json({user: user._id})
-    }catch(error) {
-        res.status(400).json({
-            message: error.message
-        })
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
+        const user = new User({
+            fullName: req.body.fullName,
+            email: req.body.email,
+            password: hashedPassword,
+        });
+        const savedUser = await user.save();
+        res.status(201).json(savedUser);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };
