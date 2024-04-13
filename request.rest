@@ -1,8 +1,2 @@
-POST http://localhost:5000/api/users/signup
-Content-Type: application/json
-
-{
-    "fullName" : "Yashar",
-    "email" : "123@gmail.com",
-    "password" : "123"
-}
+GET http://localhost:5000/api/users/user
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjEzMWYwMDQ2ZjUxZGQyYTQzYzhlNTciLCJpYXQiOjE3MTI5Njg2MjMsImV4cCI6MTcxMzA1NTAyM30.bjlbY_fTNJVKBHc75RfMInGqU6Tt6qm7aFYidrbhltA
