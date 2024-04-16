@@ -16,8 +16,13 @@ exports.login = async (req, res) => {
             return res.status(401).send('Invalid credentials');
         }
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
-        res.json({ token });
+        const token = jwt.sign(
+            { userId: user._id, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.json({ token, role: user.role });
     } catch (error) {
         res.status(500).send('Server error');
     }

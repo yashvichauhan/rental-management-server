@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const propertyController = require('../controllers/propertyController');
+const authenticateToken = require('../middleware/authenticateToken');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -12,18 +13,14 @@ const storage = multer.diskStorage({
     }
 });
 
-
 const upload = multer({ storage: storage });
 
-
-// Route to create a new property
-router.post('/', upload.single('image'), propertyController.createProperty);
-
-// Route to retrieve all properties
-router.get('/', propertyController.getAllProperties);
-
-// Route to retrieve a single property by its ID
-router.get('/:id', propertyController.getPropertyById);
+router.post('/', authenticateToken, upload.single('image'), propertyController.createProperty);
+router.get('/', authenticateToken, propertyController.getAllProperties);
+router.get('/user/:userId', authenticateToken, propertyController.getPropertiesByUser);
+router.get('/:id', authenticateToken, propertyController.getPropertyById);
+router.put('/:id', authenticateToken, propertyController.updateProperty);
+router.delete('/:id', authenticateToken, propertyController.deleteProperty);
 
 module.exports = router;
 

@@ -1,7 +1,6 @@
 const Property = require('../models/Property');
 
-// Function to create a new property
-const createProperty = async (req, res) => {
+exports.createProperty = async (req, res) => {
     try {
         const { title, description, price, location } = req.body;
         let imagePath = '';
@@ -10,47 +9,75 @@ const createProperty = async (req, res) => {
             imagePath = req.file.path;
         }
 
+        const userId = req.userId;
+
+        if (!userId) {
+            return res.status(400).send({ message: 'User ID is required' });
+        }
+
         const property = new Property({
             title,
             description,
             price,
             location,
-            image: imagePath
+            image: imagePath,
+            user: userId
         });
 
         await property.save();
         res.status(201).send(property);
     } catch (error) {
         console.error('Error creating a new property:', error);
-        res.status(400).send({ message: 'Error creating a new property' });
+        res.status(500).send({ message: 'Error creating a new property' });
     }
 };
 
-// Function to get all properties
-const getAllProperties = async (req, res) => {
+exports.getAllProperties = async (req, res) => {
     try {
-        const properties = await Property.find({});
-        res.status(200).send(properties);
+        const properties = await Property.find();
+        res.json(properties);
     } catch (error) {
-        res.status(500).send(error);
+        res.status(500).send('Server Error');
     }
 };
 
-// Function to get a single property by ID
-const getPropertyById = async (req, res) => {
+exports.getPropertiesByUser = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const properties = await Property.find({ user: userId });
+        res.json(properties);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.getPropertyById = async (req, res) => {
     try {
         const property = await Property.findById(req.params.id);
         if (!property) {
-            return res.status(404).send({ message: 'Property not found!' });
+            return res.status(404).send('Property not found');
         }
-        res.status(200).send(property);
+        res.json(property);
     } catch (error) {
-        res.status(500).send(error);
+        res.status(500).send('Server Error');
     }
 };
 
-module.exports = {
-    createProperty,
-    getAllProperties,
-    getPropertyById
+exports.updateProperty = async (req, res) => {
+    try {
+        const property = await Property.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(property);
+    } catch (error) {
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.deleteProperty = async (req, res) => {
+    try {
+        await Property.findByIdAndDelete(req.params.id);
+        res.json({ msg: 'Property deleted' });
+    } catch (error) {
+        res.status(500).send('Server Error');
+    }
 };
